@@ -9,16 +9,33 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
+        lowercase: true,
     },
     password: {
         type: String,
         required: true,
     },
-    profilePic:{
+    profilePic: {
         type: String,
         default: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+    },
+    isVerified: {
+        type: Boolean,
+        default: false,
+    },
+    verificationToken: {
+        type: String,
+    },
+    verificationTokenExpires: {
+        type: Date,
+    },
+    passwordResetToken: {
+        type: String,
+    },
+    passwordResetExpires: {
+        type: Date,
     }
-},{
+}, {
     timestamps: true,
 });
 
