@@ -2,7 +2,7 @@
 
 A modern, real-time chat application built with React, Node.js, and WebSockets. Connect with friends, join group chats, and stay connected with an intuitive user interface.
 
-![ChatsPeCharcha Preview](./frontend/public/placeholder.svg)
+![ChatsPeCharcha Preview](./frontend/public/dashScreenshot.png)
 
 ## ✨ Features
 
