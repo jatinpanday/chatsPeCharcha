@@ -101,6 +101,25 @@ const socketMiddleware = (storeAPI) => (next) => (action) => {
           }
         });
 
+        // Handle message status updates (delivered, seen)
+        socket.on("messageStatusUpdate", ({ messageId, status, tempId }) => {
+          console.log('Message status update received:', { messageId, status, tempId });
+          if (messageId || tempId) {
+            console.log('Dispatching updateMessageStatus with:', { 
+              messageId: messageId || tempId, 
+              status,
+              newId: messageId 
+            });
+            dispatch(updateMessageStatus({
+              messageId: messageId || tempId,
+              status,
+              newId: messageId
+            }));
+          } else {
+            console.warn('No messageId or tempId in status update:', { messageId, status, tempId });
+          }
+        });
+
         // Handle typing events from other users
         socket.on("userTyping", ({ senderId, isTyping, receiverId }) => {
           console.log('Socket middleware received typing event:', { senderId, isTyping, receiverId });

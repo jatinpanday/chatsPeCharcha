@@ -93,18 +93,42 @@ const chatSlice = createSlice({
       }
     },
     updateMessageStatus: (state, action) => {
-      const { messageId, status } = action.payload;
+      const { messageId, status, newId } = action.payload;
+      console.log('Updating message status:', { messageId, status, newId });
       
       // Find and update the message status in all conversations
+      let found = false;
       Object.keys(state.messages).forEach(conversationId => {
         const messageIndex = state.messages[conversationId].findIndex(
           msg => msg._id === messageId || msg.tempId === messageId
         );
         
         if (messageIndex !== -1) {
-          state.messages[conversationId][messageIndex].status = status;
+          found = true;
+          const message = state.messages[conversationId][messageIndex];
+          console.log('Found message to update:', message);
+          
+          // Update status and potentially the message ID
+          message.status = status;
+          
+          // If we have a new ID (e.g., replacing a temp ID), update it
+          if (newId) {
+            message._id = newId;
+            delete message.tempId;
+          }
+          
+          // Mark as read if status is 'seen'
+          if (status === 'seen') {
+            message.isRead = true;
+          }
+          
+          console.log('Updated message:', message);
         }
       });
+      
+      if (!found) {
+        console.warn('Message not found for status update:', messageId);
+      }
     },
     setOnlineUsers: (state, action) => {
       state.onlineUsers = action.payload;

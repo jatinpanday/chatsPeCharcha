@@ -20,6 +20,8 @@ export interface Chat {
   unreadCount?: number;
   online?: boolean;
   timestamp?: string;
+  updatedAt?: string;
+  lastSeen?: string;
 }
 
 export interface Message {

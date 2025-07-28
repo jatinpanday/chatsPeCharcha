@@ -21,6 +21,10 @@ interface SidebarProps {
   searchResults: Array<{ _id: string; fullName: string; profilePic?: string }>;
   searchText: string;
   onSearchTextChange: (text: string) => void;
+  isSendDialogOpen: boolean;
+  setIsSendDialogOpen: (open: boolean) => void;
+  isRequestsOpen: boolean;
+  setIsRequestsOpen: (open: boolean) => void;
 }
 
 export function Sidebar({
@@ -35,9 +39,11 @@ export function Sidebar({
   searchResults,
   searchText,
   onSearchTextChange,
+  isSendDialogOpen,
+  setIsSendDialogOpen,
+  isRequestsOpen,
+  setIsRequestsOpen
 }: SidebarProps) {
-  const [isRequestsOpen, setIsRequestsOpen] = useState(false);
-  const [isSendDialogOpen, setIsSendDialogOpen] = useState(false);
   const [email, setEmail] = useState("");
 
   return (

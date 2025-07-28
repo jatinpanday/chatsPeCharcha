@@ -60,7 +60,30 @@ io.on("connection", (socket) => {
       
       // Send message to the specific receiver if online
       if (receiverSocketId) {
-        io.to(receiverSocketId).emit("receiveMessage", messageObj);
+        const receiveMessage = {
+          ...messageObj,
+          status: 'delivered' // Ensure status is set to delivered
+        };
+        console.log('Sending receiveMessage to receiver:', { 
+          receiverSocketId, 
+          message: receiveMessage 
+        });
+        io.to(receiverSocketId).emit("receiveMessage", receiveMessage);
+        
+        // Update sender that message was delivered
+        const senderSocketId = getReceiverSocketId(senderId);
+        if (senderSocketId) {
+          const statusUpdate = {
+            messageId: messageObj._id,
+            status: 'delivered',
+            tempId: messageObj.tempId
+          };
+          console.log('Sending messageStatusUpdate to sender:', { 
+            senderSocketId, 
+            update: statusUpdate 
+          });
+          io.to(senderSocketId).emit("messageStatusUpdate", statusUpdate);
+        }
       }
       
       // Also send back to sender for confirmation

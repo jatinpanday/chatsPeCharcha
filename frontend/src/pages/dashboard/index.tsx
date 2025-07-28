@@ -28,6 +28,8 @@ export function Dashboard() {
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [isSendDialogOpen, setIsSendDialogOpen] = useState(false);
+  const [isRequestsOpen, setIsRequestsOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<Array<{
     _id: string;
     fullName: string;
@@ -111,7 +113,7 @@ export function Dashboard() {
     const handleNewMessage = (message: any) => {
       try {
         console.log('Received new message:', message);
-        
+
         // Validate required fields
         if (!message || (!message.senderId && !message.sender) || !message.content) {
           console.error('Invalid message format:', message);
@@ -121,7 +123,7 @@ export function Dashboard() {
         // Extract sender ID from message (handling different message formats)
         const senderId = message.senderId || (message.sender?._id) || null;
         const receiverId = message.receiverId || user?._id || null;
-        
+
         if (!senderId || !receiverId) {
           console.error('Missing senderId or receiverId in message:', message);
           return;
@@ -129,19 +131,19 @@ export function Dashboard() {
 
         // Create a stable message ID if one doesn't exist
         const messageId = message._id || `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        
+
         // Check if we already have this message in the current conversation
         const conversationId = [senderId, receiverId].sort().join('_');
         const existingMessages = messages.filter(
           m => (m.senderId === senderId && m.receiverId === receiverId) ||
-               (m.senderId === receiverId && m.receiverId === senderId)
+            (m.senderId === receiverId && m.receiverId === senderId)
         );
-        
+
         const isDuplicate = existingMessages.some(
           m => (m._id === messageId) ||
-               (m.content === message.content && 
-                m.senderId === senderId &&
-                Math.abs(new Date(m.timestamp).getTime() - new Date(message.timestamp || Date.now()).getTime()) < 10000)
+            (m.content === message.content &&
+              m.senderId === senderId &&
+              Math.abs(new Date(m.timestamp).getTime() - new Date(message.timestamp || Date.now()).getTime()) < 10000)
         );
 
         if (isDuplicate) {
@@ -160,14 +162,14 @@ export function Dashboard() {
           status: 'delivered',
           isRead: false
         };
-        
+
         console.log('Dispatching addMessage with:', messageToAdd);
         dispatch(addMessage(messageToAdd));
 
         // Show notification for new messages not in the current chat
         // const isMessageFromCurrentChat = selectedChatId === senderId;
         // const isMessageFromCurrentUser = senderId === user?._id;
-        
+
         // if (!isMessageFromCurrentChat && !isMessageFromCurrentUser) {
         //   const sender = contacts.find(c => c._id === senderId);
         //   if (sender) {
@@ -218,10 +220,27 @@ export function Dashboard() {
     };
   }, [dispatch]);
 
+  // Handle search text changes
+  const handleSearchTextChange = useCallback((text: string) => {
+    setSearchText(text);
+    
+    if (text.trim() === '') {
+      setSearchResults([]);
+      return;
+    }
+
+    // Filter contacts based on search text
+    const filtered = contacts.filter(contact => 
+      contact.fullName.toLowerCase().includes(text.toLowerCase())
+    );
+    
+    setSearchResults(filtered);
+  }, [contacts]);
+
   // Update contacts when friends data changes
   useEffect(() => {
     if (friendsData?.success && Array.isArray(friendsData.data)) {
-      setContacts(friendsData.data.map((friend: any) => ({
+      const updatedContacts = friendsData.data.map((friend: any) => ({
         _id: friend._id,
         fullName: friend.fullName,
         profilePic: friend.profilePic,
@@ -230,15 +249,26 @@ export function Dashboard() {
         online: friend.online || false,
         timestamp: friend.lastMessage?.timestamp ?
           new Date(friend.lastMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) :
-          ""
-      })));
+          "",
+        updatedAt: friend.updatedAt || friend.lastMessage?.timestamp || new Date().toISOString()
+      }));
+
+      setContacts(updatedContacts);
+
+      // If search is active, update search results
+      if (searchText.trim() !== '') {
+        const filtered = updatedContacts.filter(contact => 
+          contact.fullName.toLowerCase().includes(searchText.toLowerCase())
+        );
+        setSearchResults(filtered);
+      }
 
       // Auto-select the first chat if none is selected
       if (friendsData.data.length > 0 && !selectedChatId) {
         setSelectedChatId(friendsData.data[0]._id);
       }
     }
-  }, [friendsData, selectedChatId, dispatch]);
+  }, [friendsData, selectedChatId, dispatch, searchText]);
 
   // Update friend requests when requests data changes
   useEffect(() => {
@@ -269,6 +299,7 @@ export function Dashboard() {
           description: "Friend request sent successfully"
         });
         setSearchResults([]);
+        setIsSendDialogOpen(false);
       } else {
         throw new Error(response.message || "Failed to send friend request");
       }
@@ -302,7 +333,7 @@ export function Dashboard() {
 
     try {
       console.log('Optimistically adding message:', newMessage);
-      
+
       // Add message directly to Redux store for immediate UI update
       dispatch(addMessage({
         conversationId,
@@ -336,7 +367,7 @@ export function Dashboard() {
             messageId: tempId,
             status: 'failed'
           }));
-          
+
           toast({
             title: 'Error',
             description: response?.error || 'Failed to send message',
@@ -425,6 +456,7 @@ export function Dashboard() {
     setFriendRequests(prev => prev.filter(req => req._id !== requestId));
     refetchRequests();
     refetchFriends();
+    setIsRequestsOpen(false);
   };
 
   // Get typing status from Redux
@@ -438,6 +470,7 @@ export function Dashboard() {
 
   // Get the currently selected chat
   const currentChat = contacts.find(chat => chat._id === selectedChatId) || null;
+  console.log(currentChat, "currentChat");
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -445,10 +478,10 @@ export function Dashboard() {
         userName={user?.fullName || 'User'}
         userAvatar={user?.profilePic}
       />
-
+      
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
-          chats={contacts}
+          chats={searchText ? searchResults : contacts}
           selectedChatId={selectedChatId}
           onSelectChat={setSelectedChatId}
           isLoading={loadingFriends}
@@ -458,7 +491,11 @@ export function Dashboard() {
           isSearching={isSearching}
           searchResults={searchResults}
           searchText={searchText}
-          onSearchTextChange={setSearchText}
+          onSearchTextChange={handleSearchTextChange}
+          isSendDialogOpen={isSendDialogOpen}
+          setIsSendDialogOpen={setIsSendDialogOpen}
+          isRequestsOpen={isRequestsOpen}
+          setIsRequestsOpen={setIsRequestsOpen}
         />
 
         <MainChatArea
