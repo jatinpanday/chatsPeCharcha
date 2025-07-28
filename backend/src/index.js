@@ -4,22 +4,36 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { connectDB } from './lib/db.js';
 import authRoutes from './routes/auth.route.js';
-
-// Initialize environment variables
+import messageRoutes from './routes/message.route.js';
+import friendRequestRoutes from './routes/friendRequest.route.js';
+import {app, server} from './lib/socket.js';
 dotenv.config();
 
-const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  methods: ["GET", "POST","PUT","DELETE","PATCH"],
+  credentials: true
+}));
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/message", messageRoutes);
+app.use("/api/users", friendRequestRoutes);
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    connectDB();
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+  });
+}
+
+server.listen(PORT, () => {
+  console.log("server is running on PORT:" + PORT);
+  connectDB();
 });

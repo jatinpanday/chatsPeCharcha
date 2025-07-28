@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MessageSquare, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import useMutation from "../hooks/useMutation";
+import { USERS_SIGNUP } from "../imports/api";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,9 +17,8 @@ const Signup = () => {
     password: "",
     confirmPassword: ""
   });
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { mutate, loading } = useMutation();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -29,27 +29,21 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Password mismatch",
-        description: "Please make sure your passwords match.",
-        variant: "destructive"
-      });
-      return;
+    console.log(formData);
+
+    const resultAction = await mutate({
+      data: {
+        "fullName": formData.name,
+        "email": formData.email,
+        "password": formData.password
+      },
+      method: "POST",
+      url: USERS_SIGNUP,
+    });
+
+    if (resultAction.success) {
+      navigate("/login");
     }
-
-    setLoading(true);
-
-    // Simulate signup process
-    setTimeout(() => {
-      setLoading(false);
-      toast({
-        title: "Account created successfully!",
-        description: "Welcome to chatsPeCharcha. You can now start chatting.",
-      });
-      navigate("/dashboard");
-    }, 1000);
   };
 
   return (

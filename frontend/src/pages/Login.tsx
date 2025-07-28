@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,29 +6,67 @@ import { Label } from "@/components/ui/label";
 import { MessageSquare, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-
+import useMutation from "../hooks/useMutation";
+import { USERS_LOGIN } from "../imports/api";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser } from "../redux/features/user/userSlice";
+import { setToken } from "../redux/features/user/userSlice";
+import { selectIsAuthenticated } from "../redux/features/user/userSlice";
+import { connectSocket, disconnectSocket } from "../redux/features/socket/socketActions";
+``
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { mutate, loading } = useMutation();
+  const dispatch = useDispatch();
+  const isAuthenticated = useSelector(selectIsAuthenticated);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    // Simulate login process
-    setTimeout(() => {
-      setLoading(false);
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully logged in.",
-      });
+    const result = await mutate({
+      data: {
+        email: email,
+        password: password,
+      },
+      method: "POST",
+      url: USERS_LOGIN,
+    });
+    
+    if (result.success) {
+      // Set the user data (without the token)
+      const { token, ...userData } = result.data;
+      dispatch(setUser(userData));
+      // Set the token separately
+      dispatch(setToken({ token }));
+      
+      // Store the token in localStorage for persistence
+      localStorage.setItem('authToken', token);
+      
+      // Navigate to dashboard after successful login
       navigate("/dashboard");
-    }, 1000);
+    }
+    // setLoading(true);
+
+    // // Simulate login process
+    // setTimeout(() => {
+    //   setLoading(false);
+    //   toast({
+    //     title: "Welcome back!",
+    //     description: "You have successfully logged in.",
+    //   });
+    //   navigate("/dashboard");
+    // }, 1000);
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(connectSocket());
+    } else {
+      dispatch(disconnectSocket());
+    }
+  }, [isAuthenticated, dispatch]);
 
   return (
     <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-4">

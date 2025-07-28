@@ -138,7 +138,7 @@ const Landing = () => {
             <span className="text-lg font-semibold">chatsPeCharcha</span>
           </div>
           <p className="text-muted-foreground">
-            © 2024 chatsPeCharcha. All rights reserved.
+            © 2025 chatsPeCharcha. All rights reserved.
           </p>
         </div>
       </footer>

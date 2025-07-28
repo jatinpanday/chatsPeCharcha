@@ -101,6 +101,48 @@ class EmailService {
       text,
     });
   }
+
+  /**
+   * Send a friend request notification email
+   * @param {string} to - Recipient email
+   * @param {string} fromName - Name of the person who sent the request
+   * @param {string} requestId - Friend request ID
+   * @param {string} frontendUrl - Base URL of the frontend application
+   * @returns {Promise} - Nodemailer response
+   */
+  async sendFriendRequestEmail(to, fromName, requestId, frontendUrl) {
+    const loginUrl = `${frontendUrl}/login`;
+
+    const subject = `New Friend Request from ${fromName}`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>You've received a friend request!</h2>
+        <p>${fromName} wants to connect with you on ChatsPeCharcha.</p>
+        <p>Please log in to your account to view and respond to the request.</p>
+        <div style="margin: 30px 0;">
+          <a href="${loginUrl}" 
+             style="background-color: #667bf4; 
+                    color: white; 
+                    padding: 10px 20px; 
+                    text-decoration: none; 
+                    border-radius: 4px;">
+            Login to View Request
+          </a>
+        </div>
+        <p>If the button above doesn't work, copy and paste this link into your browser:</p>
+        <p>${loginUrl}</p>
+        <p style="margin-top: 30px; color: #666; font-size: 12px;">
+          This is an automated message, please do not reply to this email.
+        </p>
+      </div>
+    `;
+
+    const text = `You've received a friend request from ${fromName} on ChatsPeCharcha.\n\n` +
+      `Please log in to your account to view and respond to the request:\n${loginUrl}`;
+
+    return this.sendEmail({ to, subject, html, text });
+  }
+
 }
 
 export default new EmailService();
