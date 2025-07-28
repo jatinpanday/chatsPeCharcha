@@ -7,8 +7,10 @@ A modern, real-time chat application built with React, Node.js, and WebSockets. 
 ## ✨ Features
 
 - 🔐 User Authentication (Signup/Login)
-- 💬 Real-time messaging
-- 👥 Group chats
+- 💬 Real-time messaging with read receipts
+- 🔍 Search contacts and conversations
+- 👤 Online/offline status indicators
+- ✍️ Typing indicators
 - 📱 Responsive design
 - 🎨 Modern UI with dark/light mode
 - 🔔 Real-time notifications
@@ -16,13 +18,22 @@ A modern, real-time chat application built with React, Node.js, and WebSockets. 
 
 ## 🚀 Tech Stack
 
+### Real-time Features
+- 🔄 WebSocket-based real-time messaging
+- 📍 Online/offline status tracking
+- ✍️ Typing indicators
+- ✅ Message status (sent, delivered, seen)
+- 🔔 Real-time notifications
+
 ### Frontend
 - React.js with TypeScript
 - Vite.js for fast development
 - Tailwind CSS for styling
 - Shadcn UI components
 - Socket.io for real-time communication
+- Redux for state management
 - React Query for data fetching
+- Date-fns for date formatting
 
 ### Backend
 - Node.js with Express
