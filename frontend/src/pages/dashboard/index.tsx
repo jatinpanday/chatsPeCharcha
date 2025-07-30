@@ -474,10 +474,10 @@ export function Dashboard() {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      <Navbar
+      {/* <Navbar
         userName={user?.fullName || 'User'}
         userAvatar={user?.profilePic}
-      />
+      /> */}
       
       <div className="flex flex-1 overflow-hidden">
         <Sidebar

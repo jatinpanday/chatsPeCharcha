@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Send as SendIcon, UserPlus, Bell } from "lucide-react";
+import { Search, Send as SendIcon, UserPlus, Bell, LogOut, MessageSquare } from "lucide-react";
 import { ChatList } from "./ChatList";
 import { FriendRequestsDialog } from "./FriendRequestsDialog";
 import { SendFriendRequestDialog } from "./SendFriendRequestDialog";
 import { Chat, FriendRequest } from "./types";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../redux/features/user/userSlice";
+import { useNavigate } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 
 interface SidebarProps {
   chats: Chat[];
@@ -46,13 +51,35 @@ export function Sidebar({
 }: SidebarProps) {
   const [email, setEmail] = useState("");
 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
+
+  const user = useSelector((state: any) => state.user.user);
+
+  const getInitials = (name: string) => {
+    return name
+      ?.split(' ')
+      ?.map(part => part[0])
+      ?.join('')
+      ?.toUpperCase();
+  };
+
+
   return (
-    <div className="w-80 border-r bg-card flex flex-col">
+    <div className="w-96 border-r bg-card flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b">
+      <div className="p-5 border-b">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Chats</h2>
           <div className="flex items-center space-x-2">
+            <MessageSquare className="h-5 w-5 text-primary" />
+            <span className="font-bold text-primary text-xl">ChatsPeCharcha</span>
+          </div>
+          <div className="flex items-center space-x-1">
             {/* Friend Requests Button with Badge */}
             <TooltipProvider>
               <Tooltip>
@@ -60,13 +87,13 @@ export function Sidebar({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="relative"
+                    className="relative h-[2rem] w-[2rem]"
                     onClick={() => setIsRequestsOpen(true)}
                   >
-                    <Bell className="h-5 w-5" />
+                    <Bell className="h-5 w-3" />
                     {friendRequests.length > 0 && (
-                      <Badge 
-                        variant="destructive" 
+                      <Badge
+                        variant="destructive"
                         className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 rounded-full"
                       >
                         {friendRequests.length > 9 ? '9+' : friendRequests.length}
@@ -87,6 +114,7 @@ export function Sidebar({
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="relative h-[2rem] w-[2rem]"
                     onClick={() => setIsSendDialogOpen(true)}
                   >
                     <UserPlus className="h-5 w-5" />
@@ -94,6 +122,26 @@ export function Sidebar({
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Add Friend</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative h-[2rem] w-[2rem]"
+                    onClick={handleLogout}
+                    title="Logout"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span className="sr-only">Logout</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Logout</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -121,7 +169,7 @@ export function Sidebar({
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search conversations..."
+            placeholder="Search or start a new chat"
             value={searchText}
             onChange={(e) => onSearchTextChange(e.target.value)}
             className="pl-10"
@@ -136,6 +184,22 @@ export function Sidebar({
         onSelectChat={onSelectChat}
         isLoading={isLoading}
       />
+      <div className="w-full p-4">
+        <div className="flex items-center space-x-2">
+          <Avatar className="h-10 w-10">
+            {user?.profilePic ? (
+              <AvatarImage src={user?.profilePic} alt={user?.fullName} />
+            ) : (
+              <AvatarFallback className="text-xs">
+                {getInitials(user?.fullName)}
+              </AvatarFallback>
+            )}
+          </Avatar>
+          <span className="hidden text-sm font-medium sm:inline-flex">
+            {user?.fullName}
+          </span> 
+        </div>
+      </div>
     </div>
   );
 }

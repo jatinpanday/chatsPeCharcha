@@ -56,7 +56,7 @@ export function ChatMessages({
 
   return (
     <ScrollArea className="flex-1 w-full">
-      <div className="flex flex-col h-full p-4 space-y-3">
+      <div className="flex flex-col h-full p-4 space-y-3 bg-muted">
         {messages.map((message) => {
           console.log(message,"message status");
           
@@ -89,7 +89,7 @@ export function ChatMessages({
                     "rounded-2xl p-3 break-words",
                     isFromCurrentUser
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
+                      : "bg-card"
                   )}
                 >
                   <p className="text-sm">{messageContent}</p>

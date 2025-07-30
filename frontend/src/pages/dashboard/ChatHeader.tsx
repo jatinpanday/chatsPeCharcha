@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Phone, Video, MoreVertical } from "lucide-react";
+import { Phone, Video, MoreVertical, Search } from "lucide-react";
 import { Chat } from "./types";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -12,15 +12,15 @@ interface ChatHeaderProps {
 
 export function ChatHeader({ chat }: ChatHeaderProps) {
   const onlineUsers = useSelector((state: RootState) => state.chat.onlineUsers);
-  
+
   if (!chat) return null;
-  
+
   // Check if the user is online
   const isOnline = onlineUsers.includes(chat._id);
-  
+
   // Format the last seen time - use updatedAt if lastSeen is not available
   const lastSeenTime = chat.updatedAt || chat.timestamp;
-  const lastSeen = lastSeenTime 
+  const lastSeen = lastSeenTime
     ? formatDistanceToNow(new Date(lastSeenTime), { addSuffix: true })
     : 'recently';
 
@@ -39,7 +39,7 @@ export function ChatHeader({ chat }: ChatHeaderProps) {
               </AvatarFallback>
             </Avatar>
             {isOnline && (
-              <div 
+              <div
                 className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background"
                 title="Online"
               ></div>
@@ -60,8 +60,11 @@ export function ChatHeader({ chat }: ChatHeaderProps) {
             <Video className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="icon">
-            <MoreVertical className="h-4 w-4" />
+            <Search className="h-4 w-4" />
           </Button>
+          {/* <Button variant="ghost" size="icon">
+            <MoreVertical className="h-4 w-4" />
+          </Button>  */}
         </div>
       </div>
     </div>
